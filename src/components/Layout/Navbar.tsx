@@ -1,13 +1,16 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Zap, Calendar, MapPin, Ticket, LogOut, Shield } from 'lucide-react';
+import { Zap, Calendar, MapPin, Ticket, LogOut, Shield, MonitorSmartphone } from 'lucide-react';
 import Button from '../ui/Button';
 
 export default function Navbar() {
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => { logout(); navigate('/login'); };
+  const handleLogout = async () => {
+    await logout(); // calls BE to revoke the server-side session
+    navigate('/login');
+  };
 
   return (
     <nav className="navbar">
@@ -38,11 +41,23 @@ export default function Navbar() {
           {user ? (
             <>
               <div className="navbar-user-info">
-                <span className="navbar-user-email">{user.email}</span>
+                <span className="navbar-user-email">{user.name ?? user.email}</span>
                 <span className="navbar-user-role">{user.role}</span>
               </div>
-              <div className="navbar-avatar">{user.email[0].toUpperCase()}</div>
-              <Button variant="ghost" size="sm" onClick={handleLogout}><LogOut size={16} /></Button>
+              <div className="navbar-avatar" title="Manage sessions" style={{ cursor: 'pointer' }} onClick={() => navigate('/auth/sessions')}>
+                {(user.name ?? user.email)[0].toUpperCase()}
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                title="Active sessions"
+                onClick={() => navigate('/auth/sessions')}
+              >
+                <MonitorSmartphone size={16} />
+              </Button>
+              <Button variant="ghost" size="sm" title="Logout" onClick={handleLogout}>
+                <LogOut size={16} />
+              </Button>
             </>
           ) : (
             <>

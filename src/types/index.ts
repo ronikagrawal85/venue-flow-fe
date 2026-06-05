@@ -5,6 +5,16 @@ export interface User {
   id: string;
   email: string;
   role: UserRole;
+  name?: string;
+}
+
+export interface Session {
+  id: string;
+  userAgent?: string;
+  ipAddress?: string;
+  isActive: boolean;
+  createdAt: string;
+  expiresAt: string;
 }
 
 export interface LoginResponse {

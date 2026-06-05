@@ -1,14 +1,24 @@
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
-import * as authApi from '../api/auth';
-import type { User, UserRole } from '../types';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
+import * as authApi from "../api/auth";
+import type { Session, User } from "../types";
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<User>;
-  register: (email: string, password: string) => Promise<User>;
-  logout: () => void;
+  loginWithGoogle: () => void;
+  register: (email: string, password: string, name?: string) => Promise<User>;
+  logout: () => Promise<void>;
+  logoutAll: () => Promise<void>;
+  getSessions: () => Promise<Session[]>;
   isAdmin: boolean;
   isOrganizer: boolean;
   isPrivileged: boolean;
@@ -22,8 +32,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('vf_token');
-    const savedUser = localStorage.getItem('vf_user');
+    const savedToken = localStorage.getItem("vf_token");
+    const savedUser = localStorage.getItem("vf_user");
     if (savedToken && savedUser) {
       setToken(savedToken);
       setUser(JSON.parse(savedUser));
@@ -31,34 +41,86 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
-  const loginFn = useCallback(async (email: string, password: string): Promise<User> => {
-    const res = await authApi.login(email, password);
-    const { access_token, user: userData } = res.data;
-    setToken(access_token);
+  const setSession = useCallback((accessToken: string, userData: User) => {
+    setToken(accessToken);
     setUser(userData);
-    localStorage.setItem('vf_token', access_token);
-    localStorage.setItem('vf_user', JSON.stringify(userData));
-    return userData;
+    localStorage.setItem("vf_token", accessToken);
+    localStorage.setItem("vf_user", JSON.stringify(userData));
   }, []);
 
-  const registerFn = useCallback(async (email: string, password: string): Promise<User> => {
-    await authApi.register(email, password);
-    return loginFn(email, password);
-  }, [loginFn]);
-
-  const logout = useCallback(() => {
+  const clearSession = useCallback(() => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem('vf_token');
-    localStorage.removeItem('vf_user');
+    localStorage.removeItem("vf_token");
+    localStorage.removeItem("vf_user");
   }, []);
 
-  const isAdmin = user?.role === 'ADMIN';
-  const isOrganizer = user?.role === 'ORGANIZER';
+  const loginFn = useCallback(
+    async (email: string, password: string): Promise<User> => {
+      const res = await authApi.login(email, password);
+      const { access_token, user: userData } = res.data;
+      setSession(access_token, userData);
+      return userData;
+    },
+    [setSession],
+  );
+
+  const loginWithGoogle = useCallback(() => {
+    authApi.initiateGoogleLogin();
+  }, []);
+
+  const registerFn = useCallback(
+    async (email: string, password: string, name?: string): Promise<User> => {
+      await authApi.register(email, password, name);
+      return loginFn(email, password);
+    },
+    [loginFn],
+  );
+
+  const logoutFn = useCallback(async (): Promise<void> => {
+    try {
+      await authApi.logout();
+    } catch {
+    } finally {
+      clearSession();
+    }
+  }, [clearSession]);
+
+  const logoutAllFn = useCallback(async (): Promise<void> => {
+    try {
+      await authApi.logoutAll();
+    } catch {
+    } finally {
+      clearSession();
+    }
+  }, [clearSession]);
+
+  const getSessionsFn = useCallback(async (): Promise<Session[]> => {
+    const res = await authApi.getSessions();
+    return res.data;
+  }, []);
+
+  const isAdmin = user?.role === "ADMIN";
+  const isOrganizer = user?.role === "ORGANIZER";
   const isPrivileged = isAdmin || isOrganizer;
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login: loginFn, register: registerFn, logout, isAdmin, isOrganizer, isPrivileged }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        loading,
+        login: loginFn,
+        loginWithGoogle,
+        register: registerFn,
+        logout: logoutFn,
+        logoutAll: logoutAllFn,
+        getSessions: getSessionsFn,
+        isAdmin,
+        isOrganizer,
+        isPrivileged,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -66,6 +128,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 }
