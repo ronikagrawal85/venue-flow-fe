@@ -6,6 +6,8 @@ export interface User {
   email: string;
   role: UserRole;
   name?: string;
+  avatarUrl?: string;
+  phone?: string;
 }
 
 export interface Session {
@@ -178,4 +180,38 @@ export interface PaginatedResponse<T> {
 export interface SingleResponse<T> {
   message: string;
   data: T;
+}
+
+/* ── Booking Stats ──────────────────────────────────────────────────────────────── */
+export interface BookingStats {
+  totalBookings: number;
+  confirmedCount: number;
+  cancelledCount: number;
+  pendingCount: number;
+  expiredCount: number;
+  totalSpent: number;
+  upcomingEvents: number;
+}
+
+/* ── Audit Logs ───────────────────────────────────────────────────────────────── */
+export type AuditAction =
+  | "CREATE"
+  | "UPDATE"
+  | "DELETE"
+  | "STATUS_CHANGE"
+  | "LOGIN"
+  | "LOGOUT"
+  | "REGISTER";
+
+export interface AuditLog {
+  id: string;
+  action: AuditAction;
+  entityType: string;
+  entityId?: string;
+  userId?: string;
+  userEmail?: string;
+  changes?: Record<string, unknown>;
+  ipAddress?: string;
+  userAgent?: string;
+  createdAt: string;
 }

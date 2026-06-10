@@ -9,3 +9,4 @@ export const getBooking = (id: string): Promise<AxiosResponse> => api.get(`/book
 export const confirmBooking = (id: string): Promise<AxiosResponse> => api.patch(`/bookings/${id}/confirm`);
 export const cancelBooking = (id: string, data: { reason?: string } = {}): Promise<AxiosResponse> => api.delete(`/bookings/${id}`, { data });
 export const adminListBookings = (params?: BookingListParams): Promise<AxiosResponse> => api.get('/bookings', { params });
+export const getMyBookingStats = (): Promise<AxiosResponse> => api.get('/bookings/me/stats');

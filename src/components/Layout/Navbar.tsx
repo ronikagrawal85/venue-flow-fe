@@ -1,6 +1,6 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Zap, Calendar, MapPin, Ticket, LogOut, Shield, MonitorSmartphone, ScanLine } from 'lucide-react';
+import { Zap, Calendar, MapPin, Ticket, LogOut, Shield, MonitorSmartphone, ScanLine, FileText, User } from 'lucide-react';
 import Button from '../ui/Button';
 
 export default function Navbar() {
@@ -37,9 +37,14 @@ export default function Navbar() {
             </NavLink>
           )}
           {isAdmin && (
-            <NavLink to="/admin/bookings" className={({ isActive }) => `navbar-link ${isActive ? 'active' : ''}`}>
-              <Shield size={16} /> Admin
-            </NavLink>
+            <>
+              <NavLink to="/admin/bookings" className={({ isActive }) => `navbar-link ${isActive ? 'active' : ''}`}>
+                <Shield size={16} /> Admin
+              </NavLink>
+              <NavLink to="/admin/audit-logs" className={({ isActive }) => `navbar-link ${isActive ? 'active' : ''}`}>
+                <FileText size={16} /> Audit Logs
+              </NavLink>
+            </>
           )}
         </div>
         <div className="navbar-user">
@@ -49,9 +54,30 @@ export default function Navbar() {
                 <span className="navbar-user-email">{user.name ?? user.email}</span>
                 <span className="navbar-user-role">{user.role}</span>
               </div>
-              <div className="navbar-avatar" title="Manage sessions" style={{ cursor: 'pointer' }} onClick={() => navigate('/auth/sessions')}>
-                {(user.name ?? user.email)[0]?.toUpperCase()}
+              <div
+                className="navbar-avatar"
+                title="My Profile"
+                style={{ cursor: 'pointer', overflow: 'hidden' }}
+                onClick={() => navigate('/profile')}
+              >
+                {user.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt="Avatar"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                  />
+                ) : (
+                  (user.name ?? user.email)[0]?.toUpperCase()
+                )}
               </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                title="My Profile"
+                onClick={() => navigate('/profile')}
+              >
+                <User size={16} />
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"

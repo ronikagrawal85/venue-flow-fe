@@ -24,6 +24,9 @@ import AdminBookingsPage from "./pages/bookings/AdminBookingsPage";
 import TicketDetailPage from "./pages/tickets/TicketDetailPage";
 import VerifyTicketPage from "./pages/tickets/VerifyTicketPage";
 
+import ProfilePage from "./pages/profile/ProfilePage";
+import AuditLogsPage from "./pages/admin/AuditLogsPage";
+
 export default function App() {
   return (
     <Routes>
@@ -126,6 +129,24 @@ export default function App() {
           element={
             <ProtectedRoute roles={["ADMIN"]}>
               <AdminBookingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/audit-logs"
+          element={
+            <ProtectedRoute roles={["ADMIN"]}>
+              <AuditLogsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Profile */}
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
             </ProtectedRoute>
           }
         />

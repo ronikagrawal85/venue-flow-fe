@@ -19,6 +19,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   logoutAll: () => Promise<void>;
   getSessions: () => Promise<Session[]>;
+  updateUser: (updates: Partial<User>) => void;
   isAdmin: boolean;
   isOrganizer: boolean;
   isPrivileged: boolean;
@@ -100,6 +101,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return res.data;
   }, []);
 
+  const updateUserFn = useCallback((updates: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const updated = { ...prev, ...updates };
+      localStorage.setItem("vf_user", JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
   const isAdmin = user?.role === "ADMIN";
   const isOrganizer = user?.role === "ORGANIZER";
   const isPrivileged = isAdmin || isOrganizer;
@@ -116,6 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout: logoutFn,
         logoutAll: logoutAllFn,
         getSessions: getSessionsFn,
+        updateUser: updateUserFn,
         isAdmin,
         isOrganizer,
         isPrivileged,
