@@ -50,6 +50,11 @@ export interface Venue {
 }
 
 /* ─── Events ────────────────────────────────────────────────────────────────── */
+export interface SectionPricing {
+  sectionId: string;
+  price: number;
+}
+
 export type EventStatus =
   | "DRAFT"
   | "PUBLISHED"
